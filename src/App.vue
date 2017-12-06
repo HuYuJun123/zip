@@ -1,9 +1,11 @@
 <template>
   <div id="app">
-    <headers></headers>
-    <div class="top" @click="tops">
-      <Icon type="ios-arrow-up"></Icon>
-    </div>
+    <headers v-show="url!=='/'&url!=='/pdf'"></headers>
+    <BackTop :height="300" :bottom="200">
+      <div class="top">
+        <Icon type="ios-arrow-up"></Icon>
+      </div>
+    </BackTop>
     <router-view/>
   </div>
 </template>
@@ -13,9 +15,17 @@
   export default {
     name: 'app',
     components: {Headers},
-    methods: {
-      tops: function () {
-        $('html,body').animate({scrollTop: 0}, 500);
+    data(){
+      return {
+        url: this.$route.path
+      }
+    },
+    methods: {},
+    mounted: function () {
+    },
+    watch: {
+      $route: function () {
+        this.url = this.$route.path
       }
     }
   }
@@ -47,17 +57,30 @@
   }
 
   .top {
-    padding-top: 0 !important;
     position: fixed;
     right: 20px;
     bottom: 100px;
     width: 40px;
     height: 40px;
-    background: white;
+    background: #eee;
     border: 1px solid #e9e7e4;
     font-size: 14px;
     line-height: 40px;
     text-align: center;
+    transition: all 0.5s;
+  }
+
+  .ivu-back-top i {
+    color: #999;
+  }
+
+  .top:hover {
+    cursor: pointer;
+    background: #2db7f5;
+  }
+
+  .top:hover i {
+    color: white;
   }
 
   .checkLabel .ivu-checkbox {
@@ -184,20 +207,31 @@
     display: block !important;
   }
 
-  .amend .amendCon-title .ivu-input-wrapper .ivu-input{
+  .amend .amendCon-title .ivu-input-wrapper .ivu-input {
     text-align: center;
     height: 35px;
     font-size: 14px;
     color: #666;
     line-height: 35px;
   }
-  .amend .amendConOne-title .ivu-input-wrapper .ivu-input{
+
+  .amend .amendConOne-title .ivu-input-wrapper .ivu-input {
     font-size: 16px;
     color: #333;
   }
-  .amend .amendConOne textarea.ivu-input{
+
+  .amend .amendConOne textarea.ivu-input {
     font-size: 12px;
     color: #666;
     text-indent: 25px;
+  }
+
+  .ivu-menu-light.ivu-menu-vertical .ivu-menu-item {
+    height: 32px;
+    line-height: 32px;
+    font-size: 14px;
+    padding: 0 10px;
+    border-radius: 3px;
+    margin-top: 10px;
   }
 </style>

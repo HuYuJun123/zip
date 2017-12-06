@@ -30,5 +30,6 @@
 .tableFun i{
   font-weight: 900;
   font-size: 20px;
+  cursor: pointer;
 }
 </style>

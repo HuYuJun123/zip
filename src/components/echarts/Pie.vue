@@ -5,7 +5,7 @@
   import echarts from 'echarts'
   export default {
     name: 'Pie',
-    props:['id'],
+    props:['id','datas'],
     data () {
       return {
         charts: '',
@@ -18,6 +18,15 @@
           {value: 48, name: '外媒'}
         ],
       }
+    },
+    watch:{
+        datas:function () {
+          this.data=this.datas;
+          this.list= this.datas.map(v=>v.name);
+          this.$nextTick(function () {
+            this.drawPie(this.id)
+          })
+        }
     },
     methods: {
       drawPie(id){
@@ -40,7 +49,7 @@
           },
           series: [
             {
-              name: '访问来源',
+              name: '媒体来源',
               type: 'pie',
               radius: '55%',
               center: ['50%', '60%'],
@@ -66,12 +75,8 @@
         })
       }
     },
-    //调用
     mounted(){
-      this.$nextTick(function () {
-        this.drawPie(this.id)
-      })
-    }
+    },
   }
 </script>
 <style scoped>

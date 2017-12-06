@@ -5,12 +5,12 @@
   import echarts from 'echarts'
   export default {
     name: 'Columnar',
-    props:['id'],
+    props: ['id', 'datas'],
     data () {
       return {
         charts: '',
-        list: ['微博', '网站', '论坛', '微信', '外媒'],
-        data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+        list: [1, 2, 3, 4, 5],
+        data: ['测试1', '测试2', '测试3', '测试4', '测试5']
       }
     },
     methods: {
@@ -21,7 +21,6 @@
           tooltip: {
             trigger: 'axis'
           },
-
           //右上角工具条
           toolbox: {
             feature: {
@@ -41,46 +40,58 @@
           xAxis: [
             {
               type: 'category',
-              data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sunssssssssssssss'],
+              data: this.data,
               axisTick: {
                 alignWithLabel: true
               },
-              axisLabel:{
-                interval:0,//横轴信息全部显示
-                rotate:30,//30度角倾斜显示
+              axisLabel: {
+                interval: 0,//横轴信息全部显示
+                rotate: 30,//30度角倾斜显示
               }
             }
           ],
           yAxis: [
             {
-              type: 'value'
+              type: 'value',
             }
           ],
           series: [
             {
-              name: '直接访问',
+              name: '数量',
               type: 'bar',
               barWidth: '60%',
-              data: [10, 52, 200, 334, 390, 330, 220],
+              data: this.list,
               itemStyle: {
                 normal: {
-                  color: function (params) {
-                    let colorList = ['rgb(164,205,238)', 'rgb(42,170,227)', 'rgb(25,46,94)', 'rgb(195,229,235)','red','blue','orange','#bbb'];
+                  color: (params)=> {
+                    let arr = [];
+                    for (let i = 0; i <= this.data.length; i++) {
+                      let str = 'rgb(';
+                      str+=Math.floor(Math.random() * 255)+',';
+                      str+=Math.floor(Math.random() * 50)+100+',';
+                      str+=Math.floor(Math.random() * 50)+100+')';
+                      arr.push(str)
+                    }
+                    let colorList = arr;
                     return colorList[params.dataIndex];
                   }
                 },
               }
             }
           ]
-
         })
       }
     },
-    //调用
+    watch: {
+      datas: function () {
+        this.list = this.datas.map(v => v.value);
+        this.data = this.datas.map(v => v.name);
+        this.$nextTick(function () {
+          this.drawPie(this.id)
+        })
+      }
+    },
     mounted(){
-      this.$nextTick(function () {
-        this.drawPie(this.id)
-      })
     }
   }
 </script>

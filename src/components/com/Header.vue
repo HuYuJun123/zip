@@ -3,32 +3,26 @@
     <main>
       <img src="../../assets/logo.png" class="header-logo" alt="">
       <ul class="header-nav">
-        <li :class="act===1?'active':''" @click="actF(1)">
-          <a href="#/">舆情监测</a>
-        </li>
-        <li :class="act===2?'active':''" @click="actF(2)">
-          <a href="#/h">全文搜索</a>
-        </li>
-        <li :class="act===3?'active':''" @click="actF(3)">
-          <a href="#/bulletin">舆情简报</a>
-        </li>
-        <li :class="act===4?'active':''" @click="actF(4)">
-          <a href="#/users">用户管理</a>
-        </li>
-        <li :class="act===5?'active':''" @click="actF(5)">
-          <Dropdown>
-            <a href="/">系统设置
-              <Icon type="arrow-down-b"></Icon>
-            </a>
-            <DropdownMenu slot="list">
-              <DropdownItem>驴打滚</DropdownItem>
-              <DropdownItem>炸酱面</DropdownItem>
-              <DropdownItem>豆汁儿</DropdownItem>
-              <DropdownItem>冰糖葫芦</DropdownItem>
-              <DropdownItem>北京烤鸭</DropdownItem>
-            </DropdownMenu>
-          </Dropdown>
-        </li>
+        <router-link :to="{path:'/scheme'}">
+          <li>
+            舆情监测
+          </li>
+        </router-link>
+        <router-link :to="{path:'/search'}">
+          <li>
+            全文搜索
+          </li>
+        </router-link>
+        <router-link :to="{path:'/bulletin'}">
+          <li>
+            舆情简报
+          </li>
+        </router-link>
+        <router-link :to="{path:'/users/'}">
+          <li>
+            用户管理
+          </li>
+        </router-link>
       </ul>
       <div class="header-right">
         <div>
@@ -48,19 +42,18 @@
     name: 'Header',
     data(){
       return {
-        act: 1
+        one: true,
+        url: location.hash
       }
     },
     computed: {},
-    methods: {
-      actF: function (v) {
-        this.act = v
-      }
-    },
+    methods: {},
     mounted: function () {
 
     },
-    watch: {}
+    watch: {
+
+    }
 
   }
 </script>
@@ -93,19 +86,8 @@
     height: 70px;
   }
 
-  .header-nav > li {
+  .header-nav a > li {
     padding: 0 15px;
-  }
-
-  .header-nav > li.active a {
-    color: #03b5f7;
-  }
-
-  .header-nav > li.active {
-    border-bottom: 2px solid #03b5f7;
-  }
-
-  .header-nav a {
     color: #e6e6e6;
     line-height: 70px;
     font-size: 14px;
@@ -113,6 +95,12 @@
     width: 100%;
     height: 100%;
   }
+
+  .header-nav .router-link-active > li{
+    color: #03b5f7!important;
+    border-bottom: 2px solid #03b5f7;
+  }
+
 
   .header-right {
     float: right;

@@ -10,29 +10,30 @@
                 <span>舆情简报</span>
                 <div class="san"></div>
               </div>
-              <MenuItem name="1">
-                用户添加
-              </MenuItem>
-              <MenuItem name="2">
-                用户列表
-              </MenuItem>
+              <router-link :to="{name:'UserAdd'}">
+                <MenuItem name="1">用户添加</MenuItem>
+              </router-link>
+              <router-link :to="{name:'UserList'}">
+                <MenuItem name="2">用户列表</MenuItem>
+              </router-link>
+              <!--<router-link :to="{name:'UserEdit'}">-->
+                <!--<MenuItem name="2">用户编辑</MenuItem>-->
+              <!--</router-link>-->
             </MenuGroup>
           </Menu>
         </i-col>
         <i-col span="19" class="usersRight">
-          <add v-show="meanAct==='1'"></add>
-          <list v-show="meanAct==='2'"></list>
+          <router-view></router-view>
+          <!--<add v-show="meanAct==='1'"></add>-->
+          <!--<list v-show="meanAct==='2'"></list>-->
         </i-col>
       </Row>
     </main>
   </div>
 </template>
 <script>
-  import Add from '../users/UserAdd.vue';
-  import List from '../users/UserList.vue';
   export default{
     name: 'Users',
-    components: {Add, List},
     data(){
       return {
         meanAct: '1',
@@ -107,8 +108,12 @@
   }
 
   .ivu-menu-light.ivu-menu-vertical .ivu-menu-item-active:not(.ivu-menu-submenu) {
+    color: #333;
+    border: 0;
+  }
+  .usersLeftOne .router-link-exact-active li{
     background: #5184b8;
-    color: white;
+    color: white!important;
   }
 
   .ivu-menu-vertical.ivu-menu-light:after {

@@ -1,47 +1,30 @@
 <template>
   <ul class="fun">
-    <li @click="funS(1)">
+    <li @click="funS(2)">
       <Tooltip content="添加素材" placement="bottom">
         <Icon type="pricetags"></Icon>
       </Tooltip>
     </li>
-    <li @click="funS(2)" class="del">
-      <Tooltip content="删除" placement="bottom">
-        <Icon type="trash-a"></Icon>
-      </Tooltip>
-    </li>
-    <li class="funSpecial">
-      <Icon type="share"></Icon><Icon type="ios-arrow-down"></Icon>
-      <ul  class="funDown">
-        <li @click="funS(41)"><Icon type="android-phone-portrait"></Icon></li>
-        <li @click="funS(42)"><Icon type="chatbubbles"></Icon></li>
-        <li @click="funS(43)">w</li>
-        <li @click="funS(44)">Q</li>
-      </ul>
-    </li>
     <li @click="funS(3)">
-      <Tooltip v-show="par.sensitive" content="取消标敏" placement="bottom">
-        <Icon style="color: orangered" type="ios-bell"></Icon>
-      </Tooltip>
-      <Tooltip v-show="!par.sensitive" content="标敏" placement="bottom">
+      <Tooltip content="全部标敏" placement="bottom">
         <Icon type="ios-bell"></Icon>
       </Tooltip>
     </li>
-    <li>
-      <Tooltip content="点击复制链接" placement="bottom-end">
-        <button class="btn" :data-clipboard-text="par.url" @click="$Message.success('复制成功')" style="background: none;border: 0;color: #666;cursor: pointer">
-          <Icon type="link"></Icon>
-        </button>
+    <li @click="funS(4)">
+      <Tooltip content="全部取消标敏" placement="bottom">
+        <Icon type="ios-bell-outline"></Icon>
+      </Tooltip>
+    </li>
+    <li @click="funS(1)">
+      <Tooltip content="批量删除" placement="bottom">
+        <Icon type="trash-a"></Icon>
       </Tooltip>
     </li>
   </ul>
 </template>
 <script>
-//  复制链接的插件
-  import Clipboard from 'clipboard';
   export default{
     name: 'Fun',
-    props:['par'],
     data(){
       return {
 
@@ -49,13 +32,12 @@
     },
     computed: {},
     methods: {
-        funS:function (type) {
-          this.$emit("funSome",type,this.par)
-        },
+      funS:function (type) {
+        this.$emit("funSome",type)
+      },
     },
     mounted: function () {
-//        初始化复制链接插件
-      const clipboard = new Clipboard('.btn');
+
     }
 
   }
@@ -90,7 +72,6 @@
     display: block;
     animation: share 0.5s;
   }
-
   .funDown{
     background: white;
     position: relative;

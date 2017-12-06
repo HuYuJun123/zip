@@ -13,32 +13,39 @@
           <span>删除</span>
         </li>
         <li style="background: #fc6d69" @click="fun(4)">
-          <Icon type="ios-bell" v-show="tag"></Icon>
-          <Icon type="ios-bell-outline" v-show="!tag"></Icon>
-          <span>标敏</span></li>
+          <Icon type="ios-bell" v-if="!data.sensitive"></Icon>
+          <Icon type="ios-bell-outline" v-else></Icon>
+          <span v-if="!data.sensitive">标敏</span>
+          <span v-else>取消</span>
+        </li>
       </ul>
-      <div class="textLabel" :style="tag?'border-top-color: #e43542':'border-top-color: green' ">
-        <span class="bRed" v-show="tag">敏感</span>
-        <span class="bYellow" v-show="!tag">非敏感</span>
+      <div class="textLabel" :style="data.sensitive?'border-top-color: #e43542':'border-top-color: green' ">
+        <span class="bRed" v-show="data.sensitive">敏感</span>
+        <span class="bYellow" v-show="!data.sensitive">非敏感</span>
       </div>
-      <Breadcrumb separator=">">
-        <BreadcrumbItem :to="v.path" v-for="(v,i) in info" :key="i">{{v.name}}</BreadcrumbItem>
-      </Breadcrumb>
-      <h1 v-html="data.title"></h1>
+      <div class="breadcrumb">
+        <router-link :to="{path:v.path}" v-for="(v,i) in info" :key="i">{{v.name}} <span style="padding: 0 5px"
+                                                                                         v-show="i+1<info.length">></span>
+        </router-link>
+      </div>
+      <!--正则去掉span标签-->
+      <h1>{{data.title.replace(/<([^]*?)>/g, '')}}</h1>
       <div class="textMain">
         <p class="textInfo">
           <span>时间：</span>
-          <span>{{data.create_date}}</span>
+          <span>{{data.create_date?data.create_date.split('T').join(' '):data.spider_time.split('T').join(' ')}}</span>
           <span style="margin-left:30px ">来源：</span>
-          <span>{{data.media_name}}</span>
-          <a :href="data.url" class="textA">查看原文</a>
-          <a class="textA" style="margin-right: 25px">复制链接</a>
+          <span>{{data.sourceName}}</span>
+          <a :href="data.url" class="textA" target="_blank">查看原文</a>
+          <span class="btn textA" :data-clipboard-text="data.url" @click="$Message.success('复制成功')" style="margin-right:20px;background: none;border: 0;cursor: pointer">
+            复制链接
+          </span>
         </p>
-        <p>
+        <p v-show="data.keywords!==' '">
           <span style="color: #999">涉及词：</span>
-          <span class="cBlue">{{data.keywords.split(',').join(' ')}}</span>
+          <span class="cBlue">{{data.suggest ? data.suggest[0].input.join(' ') : ''}}</span>
         </p>
-        <p class="textCon">{{data.content}}</p>
+        <p class="textCon">{{data.content.replace(/<([^]*?)>/g, '')}}</p>
       </div>
 
     </main>
@@ -50,23 +57,74 @@
     name: 'Text',
     data(){
       return {
-        data: this.$route.params.data,
-        info: this.$route.params.info,
-        tag: true,
+        //展示数据获取组件传过来或则保存在本地的
+        data: this.$route.params.data ? this.$route.params.data : JSON.parse(sessionStorage.text).data,
+        info: this.$route.params.info ? this.$route.params.info : JSON.parse(sessionStorage.text).info,
       }
     },
     computed: {},
     methods: {
-      fun: function (v) {
-        switch (v) {
+      fun: function (type) {
+        switch (type) {
+          case 1:
+            $.ajax({
+              type: "POST",
+              url: "http://10.100.82.221:8089/material/news/add",
+              contentType: "application/json; charset=utf-8",
+              data: this.data.contentId,
+              dataType: "json",
+              success: (v) => {
+                if (v.code === 100) {
+                  this.$Notice.success({
+                    title: '添加素材成功',
+                  });
+                } else {
+                  this.$Notice.error({
+                    title: '操作失败',
+                  });
+                }
+              }
+            });
+            break;
           case 4:
-            this.tag = !this.tag;
+            let data = JSON.stringify({
+              "contentId": this.data.contentId,
+              "status": !this.data.sensitive
+            })
+            let title = '';
+            if (this.data.sensitive) {
+              title = '取消标敏成功'
+            } else {
+              title = '标敏成功'
+            }
+            $.ajax({
+              type: "POST",
+              url: "http://10.100.82.221:8089/document/sensitive-update",
+              contentType: "application/json; charset=utf-8",
+              data: data,
+              dataType: "json",
+              success: (v) => {
+                if (v.code === 100) {
+                  this.data.sensitive = !this.data.sensitive;
+                  this.$Notice.success({
+                    title: title,
+                  });
+                } else {
+                  this.$Notice.error({
+                    title: '操作失败',
+                  });
+                }
+              }
+            });
             break;
         }
       }
     },
     mounted: function () {
-
+      if (this.$route.params.data) {
+//          如果有新的文本数据就将session中的数据替换
+        sessionStorage.text = JSON.stringify(this.$route.params)
+      }
     }
 
   }
@@ -166,11 +224,24 @@
   }
 
   .textInfo {
+    font-size: 13px;
     line-height: 55px;
     color: #999
   }
 
   .textCon {
     margin-top: 45px;
+    font-size: 14px;
+    color: #333;
+    text-indent: 30px;
+  }
+
+  .breadcrumb a {
+    color: #666;
+    font-size: 16px;
+  }
+
+  .breadcrumb a:hover {
+    color: #2db7f5;
   }
 </style>

@@ -1,89 +1,74 @@
 <template>
   <ul class="option">
-    <li v-show="toggle" class="optionOne">
-      <div class="optionOne-title">
-        <span>时间范围：</span>
-      </div>
-      <RadioGroup v-model="options[0]" type="button">
-        <Radio label="今日"></Radio>
-        <Radio label="24小时"></Radio>
-        <Radio label="2天"></Radio>
-        <Radio label="7天"></Radio>
-        <Radio :label="optionCustom">
-          <input type="text" class="customTime" placeholder="自定义" @focus="customFocus" @blur="custom"
-                 v-model="optionCustom">
-        </Radio>
-      </RadioGroup>
-    </li>
-    <li v-show="toggle" class="optionOne">
-      <div class="optionOne-title">
-        <Tooltip placement="bottom-start" class="optionOne-what">
-          <Icon type="ios-help"></Icon>
-          <div slot="content" class="optionOne-what-text">
-            <p>显示多行信息</p>
-            <p><i>可以自定义样式</i></p>
-          </div>
-        </Tooltip>
-        <span>文章排序：</span>
-      </div>
-      <RadioGroup v-model="options[1]" type="button">
-        <Radio label="相似度"></Radio>
-        <Radio label="时间降序"></Radio>
-        <Radio label="时间升序"></Radio>
-        <Radio label="相似文章"></Radio>
-        <Radio label="采集顺序"></Radio>
-      </RadioGroup>
-    </li>
-    <li v-show="toggle" class="optionOne">
-      <div class="optionOne-title">
-        <Tooltip placement="bottom-start" class="optionOne-what">
-          <Icon type="ios-help"></Icon>
-          <div slot="content" class="optionOne-what-text">
-            <p>显示多行信息</p>
-            <p><i>可以自定义样式</i></p>
-          </div>
-        </Tooltip>
-        <span>转发微博：</span>
-      </div>
-      <RadioGroup v-model="options[2]" type="button">
-        <Radio label="显示"></Radio>
-        <Radio label="不显示"></Radio>
-      </RadioGroup>
-    </li>
-    <li v-show="toggle" class="optionOne">
-      <div class="optionOne-title">
-        <Tooltip placement="bottom-start" class="optionOne-what">
-          <Icon type="ios-help"></Icon>
-          <div slot="content" class="optionOne-what-text">
-            <p>显示多行信息</p>
-            <p><i>可以自定义样式</i></p>
-          </div>
-        </Tooltip>
-        <span>相似文章：</span>
-      </div>
-      <RadioGroup v-model="options[3]" type="button">
-        <Radio label="合并"></Radio>
-        <Radio label="不合并"></Radio>
-      </RadioGroup>
-    </li>
+    <!--<li v-show="toggle" class="optionOne">-->
+      <!--<div class="optionOne-title">-->
+        <!--<span>时间范围：</span>-->
+      <!--</div>-->
+      <!--<RadioGroup v-model="options.time" type="button">-->
+        <!--<Radio label="今日"></Radio>-->
+        <!--<Radio label="24小时"></Radio>-->
+        <!--<Radio label="2天"></Radio>-->
+        <!--<Radio label="7天"></Radio>-->
+        <!--<Radio label="1个月"></Radio>-->
+      <!--</RadioGroup>-->
+    <!--</li>-->
+    <!--<li v-show="toggle" class="optionOne">-->
+      <!--<div class="optionOne-title">-->
+        <!--<Tooltip placement="bottom-start" class="optionOne-what">-->
+          <!--<Icon type="ios-help"></Icon>-->
+          <!--<div slot="content" class="optionOne-what-text">-->
+            <!--<p>显示多行信息</p>-->
+            <!--<p><i>可以自定义样式</i></p>-->
+          <!--</div>-->
+        <!--</Tooltip>-->
+        <!--<span>文章排序：</span>-->
+      <!--</div>-->
+      <!--<RadioGroup v-model="options.sen" type="button">-->
+        <!--<Radio label="相似度"></Radio>-->
+        <!--<Radio label="时间降序"></Radio>-->
+        <!--<Radio label="时间升序"></Radio>-->
+        <!--<Radio label="相似文章"></Radio>-->
+        <!--<Radio label="采集顺序"></Radio>-->
+      <!--</RadioGroup>-->
+    <!--</li>-->
+    <!--<li v-show="toggle" class="optionOne">-->
+      <!--<div class="optionOne-title">-->
+        <!--<Tooltip placement="bottom-start" class="optionOne-what">-->
+          <!--<Icon type="ios-help"></Icon>-->
+          <!--<div slot="content" class="optionOne-what-text">-->
+            <!--<p>显示多行信息</p>-->
+            <!--<p><i>可以自定义样式</i></p>-->
+          <!--</div>-->
+        <!--</Tooltip>-->
+        <!--<span>转发微博：</span>-->
+      <!--</div>-->
+      <!--<RadioGroup v-model="options.show" type="button">-->
+        <!--<Radio label="显示"></Radio>-->
+        <!--<Radio label="不显示"></Radio>-->
+      <!--</RadioGroup>-->
+    <!--</li>-->
+    <!--<li v-show="toggle" class="optionOne">-->
+      <!--<div class="optionOne-title">-->
+        <!--<Tooltip placement="bottom-start" class="optionOne-what">-->
+          <!--<Icon type="ios-help"></Icon>-->
+          <!--<div slot="content" class="optionOne-what-text">-->
+            <!--<p>显示多行信息</p>-->
+            <!--<p><i>可以自定义样式</i></p>-->
+          <!--</div>-->
+        <!--</Tooltip>-->
+        <!--<span>相似文章：</span>-->
+      <!--</div>-->
+      <!--<RadioGroup v-model="options.he" type="button">-->
+        <!--<Radio label="合并"></Radio>-->
+        <!--<Radio label="不合并"></Radio>-->
+      <!--</RadioGroup>-->
+    <!--</li>-->
     <li v-show="toggle" class="optionOne">
       <div class="optionOne-title">
         <span>来源类型(多选):</span>
       </div>
-      <CheckboxGroup v-model="options[4]" @on-change='optionsChange' class="checkLabel">
-        <Checkbox label="全部"></Checkbox>
-        <Checkbox label="微博"></Checkbox>
-        <Checkbox label="网站"></Checkbox>
-        <Checkbox label="报刊"></Checkbox>
-        <Checkbox label="论坛"></Checkbox>
-        <Checkbox label="新闻"></Checkbox>
-        <Checkbox label="客户端"></Checkbox>
-        <Checkbox label="博客"></Checkbox>
-        <Checkbox label="政务"></Checkbox>
-        <Checkbox label="视频"></Checkbox>
-        <Checkbox label="外媒"></Checkbox>
-        <Checkbox label="微信"></Checkbox>
-        <Checkbox label="头条"></Checkbox>
+      <CheckboxGroup v-model="options.sourceType" @on-change='optionsChange' class="checkLabel">
+        <Checkbox :label="v" v-for="(v,i) in filter" :key="i"></Checkbox>
       </CheckboxGroup>
     </li>
     <Row v-show="toggle" class="optionOne-button" type="flex" justify="center" :gutter="30">
@@ -99,52 +84,49 @@
       <Icon type="ios-arrow-up" v-show="toggle"></Icon>
       <Icon type="ios-arrow-down" v-show="!toggle"></Icon>
     </div>
-    <li v-show="!toggle" class="optionOneNull">展开查看更多选项</li>
+    <li v-show="!toggle" style="cursor: pointer" @click="toggleFun">展开查看更多选项</li>
   </ul>
 </template>
 <script>
   export default{
     name: '',
+    props: ['list', 'filter'],
     data(){
       return {
-        optionCustom: '自定义',
-        options: ['今日', '相似度', '显示', '合并', ['论坛', '博客']],
+        options: {time: '', sen: '', show: '', he: '', sourceType: []},
         toggle: true,
         indeterminate: true,
         checkAll: false,
       }
     },
-    computed: {},
+    computed: {
+    },
     methods: {
       toggleFun: function () {
-        this.toggle = !this.toggle
+        this.toggle = !this.toggle;
       },
       preserve: function () {
-        console.log(this.options)
+        this.$emit('preserve', this.options)
       },
       search: function () {
         this.$emit('search', this.options)
       },
-      customFocus: function () {
-        this.options[0] = this.optionCustom;
-      },
-      custom: function () {
-        this.options[0] = this.optionCustom;
-      },
-      optionsChange:function (v) {
-        if (v[v.length-1]==='全部') {
-          this.options[4]=['全部']
-        }else if(v[0]==='全部'){
-          this.options[4].shift()
+//      判定是否全选
+      optionsChange: function (v) {
+        if (v[v.length - 1] === '全部') {
+          this.options.sourceType = ['全部']
+        } else if (v[0] === '全部') {
+          this.options.sourceType.shift()
         }
       }
 
     },
     mounted: function () {
-
     },
     watch: {
-
+      list(){
+        this.options = this.list;
+      },
     }
 
   }
@@ -219,17 +201,6 @@
   }
 
   .option .ivu-radio-group-button .ivu-radio-wrapper:hover {
-    color: #fb7e03;
-  }
-
-  .customTime {
-    width: 100px !important;
-    height: 20px !important;
-    opacity: 1 !important;
-    border: 0;
-  }
-
-  .option .ivu-radio-wrapper-checked .customTime {
     color: #fb7e03;
   }
 

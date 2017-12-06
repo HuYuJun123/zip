@@ -9,15 +9,17 @@ import 'iview/dist/styles/iview.css';
 import $ from 'jquery';
 import './assets/icon/iconfont.css'
 
+
 Vue.use(VueRouter);
 Vue.use(iView);
 
 Vue.config.productionTip = false
+
 
 /* eslint-disable no-new */
 new Vue({
   el: '#app',
   router,
   template: '<App/>',
-  components: { App }
+  components: {App}
 })

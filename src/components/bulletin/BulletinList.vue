@@ -24,10 +24,12 @@
       </Row>
     </Form>
     <ul class="bulletinButton">
-      <li>
-        <i class="iconfont" style="color: #9cd574;margin-right: 6px;font-weight: 500;font-size: 16px">&#xe64b;</i>
-        新建
-      </li>
+      <router-link :to="{path:'/bulletin/matter'}">
+        <li>
+          <i class="iconfont" style="color: #9cd574;margin-right: 6px;font-weight: 500;font-size: 16px">&#xe64b;</i>
+          新建
+        </li>
+      </router-link>
       <div style="width: 1px;height: 16px;margin-top: 12px;background: #d9d9d9"></div>
       <li>
         <i class="iconfont" style="color: #03b5f7;margin-right: 6px;font-weight: 500;font-size: 16px">&#xe60e;</i>
@@ -43,16 +45,29 @@
       <Table stripe ref="selection" :columns="columns" :data="data" size="large" @on-selection-change="table"></Table>
     </div>
     <Page :current="1" :total="100" simple class="bulletinList-page" @on-change="page"></Page>
+    <Modal v-model="modal1" width="80" :closable="false">
+      <Preview :data="previewData" ref="preview"></Preview>
+      <footer>
+        <Button @click="modal1=false"
+                style="width:160px;height: 40px;display: block;margin: 35px auto;color: #333;font-size: 16px"
+                type="ghost">
+          返回
+        </Button>
+      </footer>
+    </Modal>
   </div>
 </template>
 <script>
   import Tab from "../com/TableFun.vue";
   import Tit from '../com/TableTitle.vue'
+  import Preview from './Preview.vue'
   export default{
     name: 'BulletinList',
-    components: {Tab, Tit},
+    components: {Tab, Tit, Preview},
     data(){
       return {
+        modal1: false,
+        previewData: {},
         formItem: {
           name: '',
           dateS: '',
@@ -74,6 +89,11 @@
                     name: params.row.name,
                     sensitive: params.row.sensitive
                   },
+                  on: {
+                    click: () => {
+                      this.fun5(params.row)
+                    }
+                  }
                 }),
               ])
             }
@@ -94,7 +114,7 @@
                   },
                   on: {
                     click: () => {
-                      this.fun4(params)
+                      this.fun4(params, 1)
                     }
                   }
                 }),
@@ -104,7 +124,7 @@
                   },
                   on: {
                     click: () => {
-                      this.fun4(params)
+                      this.fun4(params, 2)
                     }
                   }
                 }),
@@ -114,7 +134,7 @@
                   },
                   on: {
                     click: () => {
-                      this.fun4(params)
+                      this.fun4(params, 3)
                     }
                   }
                 }),
@@ -124,7 +144,7 @@
                   },
                   on: {
                     click: () => {
-                      this.fun4(params)
+                      this.fun4(params, 4)
                     }
                   }
                 }),
@@ -134,7 +154,7 @@
                   },
                   on: {
                     click: () => {
-                      this.fun4(params)
+                      this.fun4(params, 5)
                     }
                   }
                 }),
@@ -175,32 +195,8 @@
             }
           }
         ],
-        data: [
-          {
-            name: '模版1',
-            time: '2016-10-03',
-            title: '简报方案1',
-            sensitive: true
-          },
-          {
-            name: '模版2',
-            time: '2016-10-01',
-            title: '简报方案2',
-            sensitive: false
-          },
-          {
-            name: '模版3',
-            time: '2016-10-02',
-            title: '简报方案3',
-            sensitive: true
-          },
-          {
-            name: '模版4',
-            time: '2016-10-04',
-            title: '简报方案4',
-            sensitive: false
-          }
-        ],
+        data: [],
+        pages: '1'
       }
     },
     computed: {},
@@ -209,27 +205,214 @@
         console.log(this.formItem)
       },
       fun1(v){
-        console.log(v, 'del')
+        let id = JSON.stringify(v.row.id);
+        $.ajax({
+          type: "POST",
+          url: "http://10.100.82.221:8089/briefing/delete",
+          contentType: "application/json; charset=utf-8",
+          data: id,
+          dataType: "json",
+          success: (v) => {
+            if (v.code === 100) {
+              let index = 0
+              this.data.forEach((c, i) => {
+                if (c.id == id) {
+                  index = i
+                }
+              });
+              this.data.splice(index, 1);
+              this.$Notice.success({
+                title: '删除成功',
+              });
+            }
+          }
+        })
       },
+      //修改
       fun2(v){
-        this.$emit('amend',v)
+        let id = v.row.id
+        location.href = '#/bulletin/amend?id=' + id
       },
       fun3(v){
         console.log(v, 'sub')
       },
-      fun4(v){
-        console.log(v, 'tab')
+      //列表的操作
+      fun4(datas, type){
+//        console.log(datas, type);
+        switch (type) {
+          case 3:
+            //生成excel表单
+            $.ajax({
+              type: "POST",
+              url: "http://10.100.82.221:8089/briefing/detail",
+              contentType: "application/json; charset=utf-8",
+              data: JSON.stringify(datas.row.id),
+              dataType: "json",
+              success: (v) => {
+                if (v.code === 100) {
+                  let data = v.obj;
+                  let obj = {};
+                  obj.guide = data.guide;
+                  obj.opioion = data.opioion;
+                  obj.mointor = data.mointor;
+                  obj.show = data.show;
+                  obj.table = data.news;
+                  obj.pie = data.sourceChart.map(v => {
+                    return {value: v.count, name: v.name}
+                  });
+                  obj.columnar = data.mediaChart.map(v => {
+                    return {value: v.count, name: v.name}
+                  });
+                  obj.annular = data.sensitiveChart.map(v => {
+                    if (v.name === '1') {
+                      return {value: v.count, name: '敏感'}
+                    } else {
+                      return {value: v.count, name: '非敏感'}
+                    }
+                  }).reverse();
+                  obj.excel = datas.row.title
+                  this.previewData = obj;
+                }
+              }
+            });
+            break;
+          case 2:
+              //生成pdf
+            location.href = '#/pdf?id=' + datas.row.id + '&title=' + datas.row.title;break;
+//            $.ajax({
+//              type: "POST",
+//              url: "http://10.100.82.221:8089/briefing/detail",
+//              contentType: "application/json; charset=utf-8",
+//              data: JSON.stringify(datas.row.id),
+//              dataType: "json",
+//              success: (v) => {
+//                if (v.code === 100) {
+//                  let data = v.obj;
+//                  let obj = {};
+//                  obj.guide = data.guide;
+//                  obj.opioion = data.opioion;
+//                  obj.mointor = data.mointor;
+//                  obj.show = data.show;
+//                  obj.table = data.news;
+//                  obj.pie = data.sourceChart.map(v => {
+//                    return {value: v.count, name: v.name}
+//                  });
+//                  obj.columnar = data.mediaChart.map(v => {
+//                    return {value: v.count, name: v.name}
+//                  });
+//                  obj.annular = data.sensitiveChart.map(v => {
+//                    if (v.name === '1') {
+//                      return {value: v.count, name: '敏感'}
+//                    } else {
+//                      return {value: v.count, name: '非敏感'}
+//                    }
+//                  }).reverse();
+//                  obj.pdf=datas.row.title
+//                  this.previewData = obj;
+//                }
+//              }
+//            });
+          case 1:
+              //生成word
+            $.ajax({
+              type: "POST",
+              url: "http://10.100.82.221:8089/briefing/detail",
+              contentType: "application/json; charset=utf-8",
+              data: JSON.stringify(datas.row.id),
+              dataType: "json",
+              success: (v) => {
+                if (v.code === 100) {
+                  let data = v.obj;
+                  let obj = {};
+                  obj.guide = data.guide;
+                  obj.opioion = data.opioion;
+                  obj.mointor = data.mointor;
+                  obj.show = data.show;
+                  obj.table = data.news;
+                  obj.pie = data.sourceChart.map(v => {
+                    return {value: v.count, name: v.name}
+                  });
+                  obj.columnar = data.mediaChart.map(v => {
+                    return {value: v.count, name: v.name}
+                  });
+                  obj.annular = data.sensitiveChart.map(v => {
+                    if (v.name === '1') {
+                      return {value: v.count, name: '敏感'}
+                    } else {
+                      return {value: v.count, name: '非敏感'}
+                    }
+                  }).reverse();
+                  obj.word = datas.row.title
+                  this.previewData = obj;
+                }
+              }
+            });
+            break;
+        }
+      },
+      //点击标题预览
+      fun5(data){
+        let id = JSON.stringify(data.id);
+        $.ajax({
+          type: "POST",
+          url: "http://10.100.82.221:8089/briefing/detail",
+          contentType: "application/json; charset=utf-8",
+          data: id,
+          dataType: "json",
+          success: (v) => {
+            if (v.code === 100) {
+              this.modal1 = true;
+              let data = v.obj;
+              let obj = {};
+              obj.guide = data.guide;
+              obj.opioion = data.opioion;
+              obj.mointor = data.mointor;
+              obj.show = data.showPosition.split(',');
+              obj.table = data.news;
+              obj.pie = data.sourceChart.map(v => {
+                return {value: v.count, name: v.name}
+              });
+              obj.columnar = data.mediaChart.map(v => {
+                return {value: v.count, name: v.name}
+              });
+              obj.annular = data.sensitiveChart.map(v => {
+                if (v.name === '1') {
+                  return {value: v.count, name: '敏感'}
+                } else {
+                  return {value: v.count, name: '非敏感'}
+                }
+              }).reverse();
+              this.previewData = obj;
+            }
+          }
+        })
       },
       table(v){
         console.log(v)
       },
       page(v){
-        console.log(v)
+        this.pages = v.toString()
       },
-
     },
     mounted: function () {
-
+      $.ajax({
+        type: "POST",
+        url: "http://10.100.82.221:8089/briefing/list",
+        contentType: "application/json; charset=utf-8",
+        data: this.pages,
+        dataType: "json",
+        success: (v) => {
+          if (v.code === 100) {
+            let arr = []
+            v.obj.forEach(c => {
+              let now = new Date(c.createTime);
+              let time = now.toLocaleDateString().split('/').join('-') + '  ' + now.getHours() + ':' + (now.getMinutes() > 9 ? now.getMinutes() : '0' + now.getMinutes());
+              arr.push({name: c.templet, time: time, id: c.id, title: c.header, sensitive: false})
+            })
+            this.data = arr
+          }
+        }
+      })
     }
 
   }
@@ -244,6 +427,12 @@
     font-size: 14px;
     color: #333;
     border-right: 2px solid #fff
+  }
+
+  .bulletinButton > a {
+    line-height: 40px;
+    font-size: 14px;
+    color: #333;
   }
 
   .bulletinButton li {

@@ -5,18 +5,14 @@
   import echarts from 'echarts'
   export default {
     name: 'Annular',
-    props:['id'],
+    props:['id','datas'],
     data () {
       return {
         charts: '',
-        list: ['微博', '网站', '论坛', '微信', '外媒','头条'],
+        list: ['敏感', '非敏感'],
         data: [
-          {value: 335, name: '微博'},
-          {value: 610, name: '网站'},
-          {value: 234, name: '论坛'},
-          {value: 135, name: '微信'},
-          {value: 48, name: '外媒'},
-          {value: 100, name: '头条'}
+          {value: 335, name: '敏感'},
+          {value: 710, name: '非敏感'},
         ],
       }
     },
@@ -40,7 +36,7 @@
           },
           series: [
             {
-              name:'访问来源',
+              name:'情感分析',
               type:'pie',
               radius: ['50%', '70%'],
               avoidLabelOverlap: false,
@@ -83,11 +79,17 @@
         })
       }
     },
-    //调用
+    watch:{
+      datas:function () {
+        this.data=this.datas;
+        this.list=this.datas.map(v=>v.name);
+        this.$nextTick(function () {
+          this.drawPie(this.id)
+        })
+      }
+    },
     mounted(){
-      this.$nextTick(function () {
-        this.drawPie(this.id)
-      })
+
     }
   }
 </script>

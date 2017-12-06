@@ -4,7 +4,7 @@
       <main>
         <div class="schemeInfo-left">
           <p>这里可以添加方案</p>
-          <Button type="primary" shape="circle" @click="actFun(7)">添加监测方案</Button>
+          <Button type="primary" shape="circle" @click="actFun(4)">添加监测方案</Button>
         </div>
         <img src="../../assets/idea.png" class="schemeInfo-right" alt="">
       </main>
@@ -36,10 +36,10 @@
               <li :class="act===5?'active':''" @click="actFun(5)">编辑方案</li>
             </ul>
             <div class="schemeDetails-list-option" v-show="act===1">
-              <options @search="searchF"></options>
-              <list-form v-show="!loading" :list="listCon" :info="textInfo" @funSome="funSomeF"
+              <options @search="searchF" :filter="filter" :list="schemeS" @preserve="preserveF"></options>
+              <list-form v-show="!loading" :list="listCon" :info="textInfo" @funSome="funSomeF" @funSomeS="funSomeFS"
                          @searchFun="searchFunF"></list-form>
-              <Page v-show="!loading" :current="pageNow" :total="100" simple class="schemeDetails-list-page"
+              <Page v-show="!loading&&listCon.length" :current="pageNow" :total="total" simple class="schemeDetails-list-page"
                     @on-change="page"></Page>
               <img v-show="loading" src="../../assets/loading.gif" alt="" style="display: block;margin: 0 auto">
             </div>
@@ -62,48 +62,24 @@
   import Analyze from './Analyze.vue';
   export default{
     name: 'Scheme',
-    components: {Options, ListForm, AddScheme, EditScheme,Statistics,Analyze},
+    components: {Options, ListForm, AddScheme, EditScheme, Statistics, Analyze},
     data(){
       return {
         pageNow: 1,
+        total: 0,
+//        数据获取中的状态
         loading: false,
         search: '',
-        meanAct: 6,
-        meanOption: [
-          {id: 1, name: '测试方案1'},
-          {id: 2, name: '测试方案2'}
-        ],
+        meanAct: null,
+//        菜单栏的数据展示
+        meanOption: [],
+//        修改方案时的数据 当前选中的方案
         meanOptionEdit: {},
         act: 1,
-        listCon: [
-          {
-            title: "这是<span class='cRed'>测试</span>标题1",
-            ext: '这是测试在要在要这是测试在要在要这是测试在要在要这是测试在要在要',
-            url: 'https://www.baidu.com/',
-            keywords: "测试1,测试2",
-            create_date: '2017-9-22',
-            media_name: '测试来源1',
-            content: '这是测试的内容这是测试的内容这是测试的内容这是测试的内容这是测试的内容这是测试的内容这是测试的内容1111111'
-          },
-          {
-            title: "这是<span class='cRed'>测试</span>标题2",
-            ext: '',
-            url: 'http://www.sina.com.cn/',
-            keywords: "测试1,测试2",
-            create_date: '2017-9-22',
-            media_name: '测试来源2',
-            content: '这是测试的内容这是测试的内容这是测试的内容这是测试的内容这是测试的内容这是测试的内容这是测试的内容2222'
-          },
-          {
-            title: "这是<span class='cRed'>测试</span>标题3",
-            ext: '这是测试在要在要这是测试在要在要这是测试在要在要这是测试在要在要',
-            url: 'https://www.toutiao.com/',
-            keywords: "测试1,测试2",
-            create_date: '2017-9-22',
-            media_name: '测试来源3',
-            content: '这是测试的内容这是测试的内容这是测试的内容这是测试的内容这是测试的内容这是测试的内容这是测试的内容33333333'
-          },
-        ]
+        listCon: [],
+//        筛选条件
+        schemeS: {time: '今日', sen: '时间升序', show: '显示', he: '不合并', sourceType: ['论坛', '微博']},
+        filter: sessionStorage.filter ? JSON.parse(sessionStorage.filter) : []
       }
     },
     computed: {
@@ -124,15 +100,10 @@
       }
     },
     methods: {
+//        翻页查询数据
       page: function (v) {
         this.pageNow = v;
         let data = {page: v, queryId: this.meanAct};
-//        $.post("http://10.100.82.221:8089/programme/content/page", data, (c => {
-//          if (c.code === 100) {
-//            this.listCon = c.obj
-//            $('html,body').animate({scrollTop:430 }, 500);
-//          }
-//        }), 'json')
         $.ajax({
             url: 'http://10.100.82.221:8089/programme/content/page',
             async: false,
@@ -143,8 +114,8 @@
             },
             success: (c) => {
               if (c.code === 100) {
-                this.loading = false
-                this.listCon = c.obj
+                this.loading = false;
+                this.listCon = c.obj;
                 $('html,body').animate({scrollTop: 430}, 200);
               }
             }
@@ -154,27 +125,51 @@
       actFun: function (v) {
         this.act = v
       },
+//      菜单栏更改后的操作
       mean: function (v) {
-        this.meanAct = v
-        this.meanOptionEdit = this.meanOption.filter(c => c.id === v)[0];
+        sessionStorage.schemeMean = v;
+        this.meanAct = v;
+        let data = v.toString();
+        $.ajax({
+          url: 'http://10.100.82.221:8089/programme/filter/get',
+          async: false,
+          type: 'POST',
+          contentType: 'application/json',
+          data: data,
+          success: (c) => {
+            if (c.code === 100) {
+              let obj = {time: '', sen: '', show: '', he: '', sourceType: []};
+              obj.sourceType = c.obj;
+              sessionStorage.fil=JSON.stringify(obj);
+              obj.sourceType = c.obj.split(',');
+              this.schemeS = obj
+            }
+          },
+          error: (s) => {
+            console.log(s)
+          }
+        })
       },
+//      添加方案
       addSucceedF: function (data) {
         this.meanOption.push(data);
         console.log(this.meanOption)
       },
+//      修改方案
       edit: function (id) {
         this.meanAct = id;
         this.act = 5;
-        this.meanOptionEdit = this.meanOption.filter(v => v.id === id)[0];
       },
+//      单条数据操作
       funSomeF: function (type, par) {
         console.log(type, par, 'fu');
         switch (type) {
+          //qq分享
           case 44:
             let p = {
               url: par.url, /*获取URL，可加上来自分享到QQ标识，方便统计*/
               desc: '', /*分享理由(风格应模拟用户对话),支持多分享语随机展现（使用|分隔）*/
-              title: '', /*分享标题(可选)*/
+              title: par.title.replace(/<([^]*?)>/g, ''), /*分享标题(可选)*/
               summary: '', /*分享摘要(可选)*/
               pics: '', /*分享图片(可选)*/
               flash: '', /*视频地址(可选)*/
@@ -182,40 +177,229 @@
               style: '202',
             };
             let s = [];
-            for (var i in p) {
+            for (let i in p) {
               s.push(i + '=' + encodeURIComponent(p[i] || ''));
             }
-            ;
             location.href = 'http://connect.qq.com/widget/shareqq/index.html?' + s.join("&");
             break;
+          //微信分享
+          case 43:
+            let wx = {
+              "touser": "OPENID",
+              "msgtype": "text",
+              "text": {
+                "content": "Hello World"
+              },
+              "customservice": {
+                "kf_account": "test1@kftest"
+              }
+            };
+            $.post('https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=ACCESS_TOKEN', wx, () => {
+              alert('ok')
+            });
+            break;
+          //短信分享
+          case 42:
+            $.get('http://v.juhe.cn/sms/send?mobile=18334784263&tpl_value=测试');
+            break;
+          case 41:
+          //邮件分享
+          case 1:
+            $.ajax({
+              type: "POST",
+              url: "http://10.100.82.221:8089/material/add",
+              contentType: "application/json; charset=utf-8",
+              data: par.docId,
+              dataType: "json",
+              success: (v) => {
+                if (v.code === 100) {
+                  this.$Notice.success({
+                    title: '添加成功',
+                  });
+                }
+              }
+            });
+            break;
+          case 3:
+            let data = JSON.stringify(
+              {
+                "docId": par.docId,
+                "docType": par.docType,
+                "sensitiveStatus": par.sensitive ? 0 : 1
+              })
+            let title = '';
+            if (par.sensitive) {
+              title = '取消标敏成功'
+            } else {
+              title = '标敏成功'
+            }
+            $.ajax({
+              type: "POST",
+              url: "http://10.100.82.221:8089/document/sensitive-update",
+              contentType: "application/json; charset=utf-8",
+              data: data,
+              dataType: "json",
+              success: (v) => {
+                if (v.code === 100) {
+                  this.listCon.forEach(c => {
+                    if (c.docId === par.docId) {
+                      c.sensitive = !c.sensitive
+                    }
+                  })
+                  this.$Notice.success({
+                    title: title,
+                  });
+                }
+              }
+            });
+            break;
         }
+      },
+//      批量数据操作
+      funSomeFS(type, par, arr){
+        let url = '';
+        let title = '';
+        let tag = 0;
+        let data = null;
+        switch (type) {
+          case 2 :
+            url = 'http://10.100.82.221:8089/material/addmulti';
+            title = '添加成功';
+            data = par;
+            break;
+          case 3 :
+            url = 'http://10.100.82.221:8089/document/batch/sensitive';
+            title = '全部标敏成功';
+            tag = 1;
+            data = arr;
+            break;
+          case 4 :
+            url = 'http://10.100.82.221:8089/document/batch/nonsensitive';
+            title = '全部取消标敏成功';
+            tag = 2;
+            data = arr;
+            break;
+        }
+        $.ajax({
+          type: "POST",
+          url: url,
+          contentType: "application/json; charset=utf-8",
+          data: JSON.stringify(data),
+          dataType: "json",
+          success: (v) => {
+            if (v.code === 100) {
+              if (tag) {
+                this.listCon.forEach(c => {
+                  c.sensitive = tag === 1 ? true : false;
+                })
+              }
+              this.$Notice.success({
+                title: title,
+              });
+            }
+          }
+        })
       },
       searchFunF: function (v) {
         console.log(v, "fu")
       },
+//      根据筛选 查询某个方案的数据
       searchF(screen){
-        let data = {queryId: this.meanAct, screen: screen}
-        $.post("http://10.100.82.221:8089/programme/content/search", data, (v) => {
+        this.loading = true;
+        let obj = {};
+        $.each(screen, (key, val) => {
+          if (typeof (val) === 'object') {
+            obj[key] = val.join(',')
+          } else {
+            obj[key] = val
+          }
+        });
+        this.pageNow = 1;
+        let data = JSON.stringify({page: 1, id: this.meanAct, filter: obj});
+        $.ajax({
+            url: 'http://10.100.82.221:8089/programme/filter/content/page',
+            async: false,
+            type: 'POST',
+            contentType: 'application/json',
+            data: data,
+            beforeSend: () => {
+              this.loading = true
+            },
+            success: (c) => {
+              if (c.code === 100) {
+                this.loading = false;
+                this.listCon = c.obj;
+                $('html,body').animate({scrollTop: 430}, 200);
+              }
+            }
+          }
+        )
+      },
+      //    保存方案的筛选
+      preserveF(v){
+        let obj = {};
+        $.each(v, (key, val) => {
+          if (typeof (val) === 'object') {
+            obj[key] = val.join(',')
+          } else {
+            obj[key] = val
+          }
+        })
+        let data = JSON.stringify({
+          filter: obj,
+          id: this.meanAct
+        });
+        $.ajax({
+          url: 'http://10.100.82.221:8089/programme/filter/save',
+          async: false,
+          type: 'POST',
+          contentType: 'application/json',
+          data: data,
+          success: (c) => {
+            if (c.code === 100) {
+             this.$Notice.success({title:'保存成功'})
+            }
+          }
+        })
+      },
+    },
+//    初始化刚开始的页面
+    mounted: function () {
+      if (sessionStorage.schemeMean) {
+        this.meanAct = parseInt(sessionStorage.schemeMean);
+        this.meanOption = JSON.parse(sessionStorage.meanOption);
+        this.meanOptionEdit = JSON.parse(sessionStorage.meanOption).filter(v => v.id === this.meanAct)[0];
+        this.total = 100;
+        let obj=JSON.parse(sessionStorage.fil);
+        obj.sourceType=obj.sourceType.split(',');
+        this.schemeS=obj
+        this.searchF(JSON.parse(sessionStorage.fil))
+
+      } else {
+        $.post("http://10.100.82.221:8089/programme/overview", this.formItem, (v) => {
           if (v.code === 100) {
-            this.pageNow = 1;
-            this.listCon = v.obj;
+            let data = v.obj;
+            this.total = 100;
+//            获取当前方案查询的第一页数据
+            this.listCon = data.elastic.length ? data.elastic : [];
+//            来源类型
+            this.filter = data.filter;
+            sessionStorage.filter = JSON.stringify(data.filter);
+//            获取当前方案的数据
+            this.meanAct = data.queryId;
+            this.meanOption = data.programmes;
+//            将方案列表保存到本地
+            sessionStorage.meanOption = JSON.stringify(data.programmes);
           }
         }, "json");
       }
     },
-    mounted: function () {
-      $.post("http://10.100.82.221:8089/programme/overview", this.formItem, (v) => {
-        if (v.code === 100) {
-          let data = v.obj;
-          this.listCon = data.elastic = [] ? this.listCon : data.elastic;
-          this.meanAct = data.queryId;
-          this.meanOption = data.programmes;
-          this.meanOptionEdit = data.programmes.filter(v => v.id === data.queryId)[0];
-          console.log(this.meanOption)
-        }
-      }, "json");
-    },
-    watch: {}
+    watch: {
+      meanAct(){
+//        获取选中状态的方案信息
+        this.meanOptionEdit = this.meanOption.filter(v => v.id === this.meanAct)[0];
+      }
+    }
 
   }
 </script>
@@ -333,7 +517,7 @@
     border-right: 0;
   }
 
-   .schemeDetails-list-option {
+  .schemeDetails-list-option {
     padding: 0 30px;
     margin-top: 20px;
   }
